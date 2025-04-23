@@ -1,6 +1,10 @@
 # cat-active-window-logger
 オープンソース、自分の用途にマッチした挙動のロガー、を楽に作れるかの検証用
 
+# ざっくりブレインストーミング
+- loggingのtrigger
+    - 前回のinformationを変数に保持し、変化したらlogging
+
 # ロードマップ案のブレインストーミング
 - 常駐
 - log保存
