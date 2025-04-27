@@ -1,6 +1,9 @@
+import time
 import logging
 import win32gui
 import win32process
+import win32api
+import win32con
 import psutil
 
 def main():
@@ -8,12 +11,11 @@ def main():
     previous_window_info = None
     while True:
         current_window_info = get_active_window_information()
-        if current_window_info is None:  # 無効な情報の場合はスキップ
-            continue
-        if current_window_info != previous_window_info:
+        if current_window_info and current_window_info != previous_window_info:
             previous_window_info = current_window_info
             display_window_info(current_window_info)
             log_window_info(current_window_info)
+        time.sleep(1)
 
 def setup_logging(filename):
     logging.basicConfig(
@@ -25,6 +27,45 @@ def setup_logging(filename):
 
 def get_active_window_information():
     hwnd = win32gui.GetForegroundWindow()
+    foreground = get_window_information(hwnd)
+
+    hwnd = get_topmost_window_in_active_monitor()
+    topmost_window = get_window_information(hwnd)
+
+    if foreground and topmost_window:
+        if foreground != topmost_window:
+            print("Foreground and Topmost Window are different.")
+            print(f"Foreground Window: {foreground}")
+            print(f"Topmost Window: {topmost_window}")
+
+    return foreground
+
+def get_topmost_window_in_active_monitor():
+    active_monitor = get_active_window_monitor()
+
+    def callback(hwnd, windows):
+        if win32gui.IsWindowVisible(hwnd) and win32gui.IsWindowEnabled(hwnd):
+            rect = win32gui.GetWindowRect(hwnd)
+            monitor = win32api.MonitorFromRect(rect, win32con.MONITOR_DEFAULTTONEAREST)
+            if monitor == active_monitor and win32gui.GetWindowText(hwnd):
+                windows.append(hwnd)
+        return True
+
+    windows = []
+    win32gui.EnumWindows(callback, windows)
+
+    return windows[0] if windows else None
+
+def get_active_window_monitor():
+    hwnd = win32gui.GetForegroundWindow()
+    if not hwnd:
+        return None
+
+    rect = win32gui.GetWindowRect(hwnd)
+    monitor = win32api.MonitorFromRect(rect, win32con.MONITOR_DEFAULTTONEAREST)
+    return monitor
+
+def get_window_information(hwnd):
     if not hwnd:
         return None
 
