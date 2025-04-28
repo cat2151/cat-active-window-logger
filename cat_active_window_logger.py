@@ -10,11 +10,16 @@ def main():
     setup_logging("active_window_log.txt")
     previous_window_info = None
     while True:
-        current_window_info = get_active_window_information()
+        (foreground, topmost_window, are_windows_equal) = get_active_window_information()
+        current_window_info = (foreground, topmost_window, are_windows_equal)
         if current_window_info and current_window_info != previous_window_info:
             previous_window_info = current_window_info
-            display_window_info(current_window_info)
-            log_window_info(current_window_info)
+            display_window_info(foreground)
+            log_window_info(foreground)
+            if not are_windows_equal:
+                display_window_info(topmost_window)
+                log_window_info(topmost_window)
+                print("Foreground and Topmost Window are different.")
         time.sleep(1)
 
 def setup_logging(filename):
@@ -32,13 +37,12 @@ def get_active_window_information():
     hwnd = get_topmost_window_in_active_monitor()
     topmost_window = get_window_information(hwnd)
 
+    are_windows_equal = True
     if foreground and topmost_window:
         if foreground != topmost_window:
-            print("Foreground and Topmost Window are different.")
-            print(f"Foreground Window: {foreground}")
-            print(f"Topmost Window: {topmost_window}")
+            are_windows_equal = False
 
-    return foreground
+    return foreground, topmost_window, are_windows_equal
 
 def get_topmost_window_in_active_monitor():
     active_monitor = get_active_window_monitor()
