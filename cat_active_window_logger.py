@@ -101,7 +101,7 @@ def log_window_info(current_window_info, current_time, is_topmost=False):
     element_title = "[[topmost_window_information]]\n" if is_topmost else "[[active_window_information]]\n"
     log_message = (
         f"{element_title}"
-        f"    timestamp = \"{current_time.strftime("%Y/%m/%d %H:%M:%S")}\"\n"
+        f"    timestamp = \"{current_time.strftime('%Y/%m/%d %H:%M:%S')}\"\n"
         f"    window_title = \"{window_title}\"\n"
         f"    process_name = \"{process_name}\"\n"
         f"    window_handle = {hwnd}\n"
