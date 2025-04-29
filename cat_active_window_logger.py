@@ -1,3 +1,4 @@
+import datetime
 import time
 import logging
 import win32gui
@@ -7,18 +8,19 @@ import win32con
 import psutil
 
 def main():
-    setup_logging("active_window_log.txt")
+    setup_logging("active_window_log.toml")
     previous_window_info = None
     while True:
         (foreground, topmost_window, are_windows_equal) = get_active_window_information()
         current_window_info = (foreground, topmost_window, are_windows_equal)
         if current_window_info and current_window_info != previous_window_info:
             previous_window_info = current_window_info
+            current_time = datetime.datetime.now()
+            log_window_info(foreground, current_time)
             display_window_info(foreground)
-            log_window_info(foreground)
             if not are_windows_equal:
                 display_window_info(topmost_window)
-                log_window_info(topmost_window)
+                log_window_info(topmost_window, current_time, True)
                 print("Foreground and Topmost Window are different.")
         time.sleep(1)
 
@@ -26,7 +28,7 @@ def setup_logging(filename):
     logging.basicConfig(
         filename=filename,
         level=logging.INFO,
-        format="%(asctime)s - %(message)s",
+        format="%(message)s",
         encoding="utf-8"
     )
 
@@ -94,16 +96,17 @@ def display_window_info(current_window_info):
     print(f"Thread ID: {thread_id}")
     print(f"Process ID: {pid}")
 
-def log_window_info(current_window_info):
+def log_window_info(current_window_info, current_time, is_topmost=False):
     window_title, process_name, thread_id, pid, hwnd = current_window_info
+    element_title = "[[topmost_window_information]]\n" if is_topmost else "[[active_window_information]]\n"
     log_message = (
-        "Active Window Information:\n"
-        f"Window Title: {window_title}\n"
-        f"Process Name: {process_name}\n"
-        f"Window Handle: {hwnd}\n"
-        f"Thread ID: {thread_id}\n"
-        f"Process ID: {pid}\n"
-        + "-" * 40
+        f"{element_title}"
+        f"    timestamp = \"{current_time.strftime("%Y/%m/%d %H:%M:%S")}\"\n"
+        f"    window_title = \"{window_title}\"\n"
+        f"    process_name = \"{process_name}\"\n"
+        f"    window_handle = {hwnd}\n"
+        f"    thread_id = {thread_id}\n"
+        f"    process_id = {pid}\n"
     )
     logging.info(log_message)
 

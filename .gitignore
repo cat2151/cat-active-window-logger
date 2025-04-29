@@ -174,4 +174,4 @@ cython_debug/
 .pypirc
 
 #
-active_window_log.txt
+active_window_log.toml
