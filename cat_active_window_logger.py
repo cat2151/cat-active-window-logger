@@ -88,6 +88,8 @@ def get_window_information(hwnd):
     return window_title, process_name, thread_id, pid, hwnd
 
 def display_window_info(current_window_info):
+    if not current_window_info:
+        return # こうしないとスクリーンセーバーで落ちる
     window_title, process_name, thread_id, pid, hwnd = current_window_info
     print("\033[H\033[J", end="")
     print(f"Active Window Title: {window_title}")
@@ -97,17 +99,26 @@ def display_window_info(current_window_info):
     print(f"Process ID: {pid}")
 
 def log_window_info(current_window_info, current_time, is_topmost=False):
-    window_title, process_name, thread_id, pid, hwnd = current_window_info
     element_title = "[[topmost_window_information]]\n" if is_topmost else "[[active_window_information]]\n"
-    log_message = (
-        f"{element_title}"
-        f"    timestamp = \"{current_time.strftime('%Y/%m/%d %H:%M:%S')}\"\n"
-        f"    window_title = \"{window_title}\"\n"
-        f"    process_name = \"{process_name}\"\n"
-        f"    window_handle = {hwnd}\n"
-        f"    thread_id = {thread_id}\n"
-        f"    process_id = {pid}\n"
+    log_message_base = (f"{element_title}"
+                        f"    timestamp = \"{current_time.strftime('%Y/%m/%d %H:%M:%S')}\"\n"
     )
+    log_message = None
+    if current_window_info:
+        window_title, process_name, thread_id, pid, hwnd = current_window_info
+        log_message = (
+            f"{log_message_base}"
+            f"    window_title = \'{window_title}\'\n" # window_titleはシングルォーティングする。でないとbackslashを含むときに、dump tomlがエラーになる
+            f"    process_name = \'{process_name}\'\n"
+            f"    window_handle = {hwnd}\n"
+            f"    thread_id = {thread_id}\n"
+            f"    process_id = {pid}\n"
+        )
+    else:
+        log_message = (
+            f"{log_message_base}"
+            f"    window_title = \'It seems that the screensaver might be active.\'\n"
+        )
     logging.info(log_message)
 
 if __name__ == "__main__":
