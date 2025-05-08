@@ -175,3 +175,4 @@ cython_debug/
 
 #
 active_window_log.toml
+secrets/

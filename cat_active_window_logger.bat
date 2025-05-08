@@ -1,1 +1,1 @@
-python cat_active_window_logger.py
+python cat_active_window_logger.py secrets\cat_active_window_logger.toml

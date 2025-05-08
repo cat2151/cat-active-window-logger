@@ -1,3 +1,4 @@
+import argparse
 import datetime
 import time
 import logging
@@ -8,7 +9,8 @@ import win32con
 import psutil
 
 def main():
-    setup_logging("active_window_log.toml")
+    args = get_args()
+    setup_logging(args.log_filename)
     previous_window_info = None
     while True:
         (foreground, topmost_window, are_windows_equal) = get_active_window_information()
@@ -23,6 +25,12 @@ def main():
                 log_window_info(topmost_window, current_time, True)
                 print("Foreground and Topmost Window are different.")
         time.sleep(1)
+
+def get_args():
+    parser = argparse.ArgumentParser(description="Log active window information.")
+    parser.add_argument("--config-filename", type=str, help="Path to the config file")
+    args = parser.parse_args()
+    return args
 
 def setup_logging(filename):
     logging.basicConfig(
