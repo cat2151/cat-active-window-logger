@@ -2,6 +2,7 @@ import argparse
 import datetime
 import time
 import logging
+import toml
 import win32gui
 import win32process
 import win32api
@@ -10,6 +11,7 @@ import psutil
 
 def main():
     args = get_args()
+    args = update_args_by_toml(args, args.config_filename)
     setup_logging(args.log_filename)
     previous_window_info = None
     while True:
@@ -31,6 +33,22 @@ def get_args():
     parser.add_argument("--config-filename", type=str, help="Path to the config file")
     args = parser.parse_args()
     return args
+
+def update_args_by_toml(args, config_filename=None):
+    if not config_filename:
+        config_filename = args.config_filename
+    print(f'args : before: {args}')
+    toml_data = read_toml(config_filename)
+    print(f'TOML : {toml_data}')
+    for key, value in toml_data.items():
+        setattr(args, key, value)
+    print(f'args : after : {args}')
+    return args
+
+def read_toml(filename):
+    with open(filename, 'r', encoding='utf-8') as f:
+        toml_data = toml.load(f)
+    return toml_data
 
 def setup_logging(filename):
     logging.basicConfig(
