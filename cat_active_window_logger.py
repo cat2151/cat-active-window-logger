@@ -1,5 +1,7 @@
 import argparse
 import datetime
+import re
+import subprocess
 import time
 import logging
 import toml
@@ -22,11 +24,26 @@ def main():
             current_time = datetime.datetime.now()
             log_window_info(foreground, current_time)
             display_window_info(foreground)
+            check_and_exec_by_window_info(foreground, args)
             if not are_windows_equal:
                 display_window_info(topmost_window)
                 log_window_info(topmost_window, current_time, True)
                 print("Foreground and Topmost Window are different.")
         time.sleep(1)
+
+def check_and_exec_by_window_info(foreground, args):
+    if foreground:
+        window_title, _process_name, _thread_id, _pid, _hwnd = foreground
+        if args.title_regex:
+            if re.search(args.title_regex, window_title):
+                print(f"Window title matches regex: {args.title_regex} : {window_title}")
+                if args.exec_cmd:
+                    try:
+                        subprocess.run(args.exec_cmd, shell=True, check=True)
+                    except subprocess.CalledProcessError as e:
+                        print(f"Command failed with return code {e.returncode}: {e}")
+                    except FileNotFoundError as e:
+                        print(f"Command not found: {e}")
 
 def get_args():
     parser = argparse.ArgumentParser(description="Log active window information.")
