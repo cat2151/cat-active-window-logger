@@ -55,10 +55,6 @@ def track_active_window(args, ipc_handle):
             previous_window_info = current_window_info
         time.sleep(1)
 
-def get_current_window_info():
-    foreground, topmost_window, are_windows_equal = get_active_window_information()
-    return foreground, topmost_window, are_windows_equal
-
 def is_window_info_changed(current_window_info, previous_window_info):
     return current_window_info and current_window_info != previous_window_info
 
@@ -166,7 +162,6 @@ def get_topmost_window_in_active_monitor(ignore_process_regex):
             return True
 
         process_name = window_info[1]
-        # Check if the process matches any ignore regex
         if ignore_process_regex:
             for regex in ignore_process_regex:
                 if re.search(regex, process_name):
@@ -180,14 +175,6 @@ def get_topmost_window_in_active_monitor(ignore_process_regex):
     win32gui.EnumWindows(callback, windows)
 
     return windows[0] if windows else None
-
-def is_ignore_window_process(args, current_window_info):
-    if args.ignore_process_regex:
-        for regex in args.ignore_process_regex:
-            if re.search(regex, current_window_info[0][1]):
-                print(f"INFO : {current_window_info[0][1]} is ignored by regex: {regex}")
-                return True
-    return False
 
 def get_active_monitor():
     hwnd = win32gui.GetForegroundWindow()
