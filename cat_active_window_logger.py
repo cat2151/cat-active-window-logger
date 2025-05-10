@@ -1,3 +1,4 @@
+import os
 import argparse
 import datetime
 import re
@@ -11,14 +12,13 @@ import win32process
 import win32api
 import win32con
 import psutil
-import os
 
 def main():
     args = get_args()
     args = update_args_by_toml(args, args.config_filename)
     setup_logging(args.log_filename)
     with ipc_create_pipe_handle(args.pipe_name) as ipc_handle:
-        monitor_active_window(args, ipc_handle)
+        track_active_window(args, ipc_handle)
 
 def get_args():
     parser = argparse.ArgumentParser(description="Log active window information.")
@@ -42,12 +42,15 @@ def read_toml(filename):
         toml_data = toml.load(f)
     return toml_data
 
-def monitor_active_window(args, ipc_handle):
+def track_active_window(args, ipc_handle):
     previous_window_info = None
+    previous_action = None  # 初期値を設定
     while True:
-        current_window_info = get_current_window_info()
+        current_window_info = get_active_window_information(args.ignore_process_regex)
         if is_window_info_changed(current_window_info, previous_window_info):
-            handle_window_change(current_window_info, args, ipc_handle, previous_window_info)
+            previous_action = handle_window_change(
+                current_window_info, args, ipc_handle, previous_window_info, previous_action
+            )
             previous_window_info = current_window_info
         time.sleep(1)
 
@@ -58,43 +61,70 @@ def get_current_window_info():
 def is_window_info_changed(current_window_info, previous_window_info):
     return current_window_info and current_window_info != previous_window_info
 
-def handle_window_change(current_window_info, args, ipc_handle, previous_window_info):
+def handle_window_change(current_window_info, args, ipc_handle, previous_window_info, previous_action):
     foreground, topmost_window, are_windows_equal = current_window_info
     current_time = datetime.datetime.now()
 
     log_window_info(foreground, current_time)
     display_window_info(foreground)
-    handle_foreground_change_and_ipc(args, ipc_handle, previous_window_info, foreground)
+    previous_action = handle_foreground_change_and_ipc(
+        args, ipc_handle, previous_window_info, foreground, previous_action
+    )
 
     if not are_windows_equal:
         display_window_info(topmost_window)
         log_window_info(topmost_window, current_time, is_topmost=True)
         print("Foreground and Topmost Window are different.")
 
-def handle_foreground_change_and_ipc(args, ipc_handle, previous_window_info, foreground):
+    return previous_action
+
+def handle_foreground_change_and_ipc(args, ipc_handle, previous_window_info, foreground, previous_action):
     if not (foreground and previous_window_info):
-        return
+        return previous_action
     previous_foreground = previous_window_info[0]
     if foreground != previous_foreground:
-        check_and_ipc_by_window_info(foreground, args, ipc_handle)
+        previous_action = check_and_ipc_by_window_info(foreground, args, ipc_handle, previous_action)
+    else:
+        print("previousと同じforegroundなのでskipします")
+    return previous_action
 
-def check_and_ipc_by_window_info(foreground, args, ipc_handle):
+def check_and_ipc_by_window_info(foreground, args, ipc_handle, previous_action):
     if not foreground:
-        return
+        return previous_action
     window_title, _process_name, _thread_id, _pid, _hwnd = foreground
 
     for action in args.actions:
-        process_action_if_title_matches(action, window_title, ipc_handle)
+        action_executed, previous_action, is_same_previous_action = process_action_if_title_matches(
+            action, previous_action, window_title, ipc_handle
+        )
+        if action_executed:
+            break
+        if is_same_previous_action:
+            print("previousと同じactionなのでskipします")
+            break
+    return previous_action
 
-def process_action_if_title_matches(action, window_title, ipc_handle):
+def process_action_if_title_matches(action, previous_action, window_title, ipc_handle):
+    print(f"Checking action: {action['action_name']}, previous: {previous_action['action_name'] if previous_action else None}")
+    action_executed = False
+    is_same_previous_action = False
+
     if not action.get("title_regex") or not re.search(action["title_regex"], window_title):
-        return
+        return action_executed, previous_action, is_same_previous_action
 
-    print(f"Window title matches regex: {action['title_regex']} : {window_title}")
-    if not action.get("message"):
-        return
+    print(f"INFO : matchしました : regex: {action['title_regex']} : {window_title}")
 
-    ipc_send_message(ipc_handle, action["message"])
+    if action == previous_action:
+        is_same_previous_action = True
+        return action_executed, previous_action, is_same_previous_action
+
+    message = action["message"]
+    if message:
+        ipc_send_message(ipc_handle, message)
+        print(f"send message: {message}")
+    action_executed = True
+    previous_action = action
+    return action_executed, previous_action, is_same_previous_action
 
 def setup_logging(filename):
     logging.basicConfig(
@@ -104,11 +134,11 @@ def setup_logging(filename):
         encoding="utf-8"
     )
 
-def get_active_window_information():
+def get_active_window_information(ignore_process_regex):
     hwnd = win32gui.GetForegroundWindow()
     foreground = get_window_information(hwnd)
 
-    hwnd = get_topmost_window_in_active_monitor()
+    hwnd = get_topmost_window_in_active_monitor(ignore_process_regex)
     topmost_window = get_window_information(hwnd)
 
     are_windows_equal = True
@@ -118,21 +148,45 @@ def get_active_window_information():
 
     return foreground, topmost_window, are_windows_equal
 
-def get_topmost_window_in_active_monitor():
+def get_topmost_window_in_active_monitor(ignore_process_regex):
     active_monitor = get_active_monitor()
 
     def callback(hwnd, windows):
-        if win32gui.IsWindowVisible(hwnd) and win32gui.IsWindowEnabled(hwnd):
-            rect = win32gui.GetWindowRect(hwnd)
-            monitor = win32api.MonitorFromRect(rect, win32con.MONITOR_DEFAULTTONEAREST)
-            if monitor == active_monitor and win32gui.GetWindowText(hwnd):
-                windows.append(hwnd)
+        if not (win32gui.IsWindowVisible(hwnd) and win32gui.IsWindowEnabled(hwnd)):
+            return True
+
+        rect = win32gui.GetWindowRect(hwnd)
+        monitor = win32api.MonitorFromRect(rect, win32con.MONITOR_DEFAULTTONEAREST)
+        if monitor != active_monitor or not win32gui.GetWindowText(hwnd):
+            return True
+
+        window_info = get_window_information(hwnd)
+        if not window_info:
+            return True
+
+        process_name = window_info[1]
+        # Check if the process matches any ignore regex
+        if ignore_process_regex:
+            for regex in ignore_process_regex:
+                if re.search(regex, process_name):
+                    print(f"INFO: Skipping process '{process_name}' due to ignore regex: {regex}")
+                    return True
+
+        windows.append(hwnd)
         return True
 
     windows = []
     win32gui.EnumWindows(callback, windows)
 
     return windows[0] if windows else None
+
+def is_ignore_window_process(args, current_window_info):
+    if args.ignore_process_regex:
+        for regex in args.ignore_process_regex:
+            if re.search(regex, current_window_info[0][1]):
+                print(f"INFO : {current_window_info[0][1]} is ignored by regex: {regex}")
+                return True
+    return False
 
 def get_active_monitor():
     hwnd = win32gui.GetForegroundWindow()
