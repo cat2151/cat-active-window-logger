@@ -1,7 +1,6 @@
 import argparse
 import datetime
 import re
-import subprocess
 import time
 import logging
 from contextlib import contextmanager
@@ -12,6 +11,7 @@ import win32process
 import win32api
 import win32con
 import psutil
+import os
 
 def main():
     args = get_args()
@@ -47,8 +47,8 @@ def monitor_active_window(args, ipc_handle):
     while True:
         current_window_info = get_current_window_info()
         if is_window_info_changed(current_window_info, previous_window_info):
+            handle_window_change(current_window_info, args, ipc_handle, previous_window_info)
             previous_window_info = current_window_info
-            handle_window_change(current_window_info, args, ipc_handle)
         time.sleep(1)
 
 def get_current_window_info():
@@ -58,38 +58,43 @@ def get_current_window_info():
 def is_window_info_changed(current_window_info, previous_window_info):
     return current_window_info and current_window_info != previous_window_info
 
-def handle_window_change(current_window_info, args, ipc_handle):
+def handle_window_change(current_window_info, args, ipc_handle, previous_window_info):
     foreground, topmost_window, are_windows_equal = current_window_info
     current_time = datetime.datetime.now()
 
     log_window_info(foreground, current_time)
     display_window_info(foreground)
-    check_and_ipc_by_window_info(foreground, args, ipc_handle)
+    handle_foreground_change_and_ipc(args, ipc_handle, previous_window_info, foreground)
 
     if not are_windows_equal:
         display_window_info(topmost_window)
         log_window_info(topmost_window, current_time, is_topmost=True)
         print("Foreground and Topmost Window are different.")
 
+def handle_foreground_change_and_ipc(args, ipc_handle, previous_window_info, foreground):
+    if not (foreground and previous_window_info):
+        return
+    previous_foreground = previous_window_info[0]
+    if foreground != previous_foreground:
+        check_and_ipc_by_window_info(foreground, args, ipc_handle)
+
 def check_and_ipc_by_window_info(foreground, args, ipc_handle):
     if not foreground:
         return
-
     window_title, _process_name, _thread_id, _pid, _hwnd = foreground
-    if not args.title_regex or not re.search(args.title_regex, window_title):
+
+    for action in args.actions:
+        process_action_if_title_matches(action, window_title, ipc_handle)
+
+def process_action_if_title_matches(action, window_title, ipc_handle):
+    if not action.get("title_regex") or not re.search(action["title_regex"], window_title):
         return
 
-    print(f"Window title matches regex: {args.title_regex} : {window_title}")
-    if not args.message:
+    print(f"Window title matches regex: {action['title_regex']} : {window_title}")
+    if not action.get("message"):
         return
 
-    try:
-        ipc_send_message(ipc_handle, args.message)
-
-    except subprocess.CalledProcessError as e:
-        print(f"Command failed with return code {e.returncode}: {e}")
-    except FileNotFoundError as e:
-        print(f"Command not found: {e}")
+    ipc_send_message(ipc_handle, action["message"])
 
 def setup_logging(filename):
     logging.basicConfig(
@@ -190,13 +195,19 @@ def log_window_info(current_window_info, current_time, is_topmost=False):
 
 @contextmanager
 def ipc_create_pipe_handle(pipe_name):
-    handle = win32file.CreateFile(
-        pipe_name,
-        win32file.GENERIC_READ | win32file.GENERIC_WRITE,
-        0, None,
-        win32file.OPEN_EXISTING,
-        0, None
-    )
+    try:
+        handle = win32file.CreateFile(
+            pipe_name,
+            win32file.GENERIC_READ | win32file.GENERIC_WRITE,
+            0, None,
+            win32file.OPEN_EXISTING,
+            0, None
+        )
+    except (OSError, win32file.error) as e:
+        print(f"\nException: {e}")
+        print(f"ERROR : server側が起動済みであることと、名前付きパイプ名が一致していることを確認してください（名前付きパイプ名：{pipe_name}）\n")
+        os._exit(1)
+
     try:
         yield handle
     finally:
