@@ -4,7 +4,9 @@ import re
 import subprocess
 import time
 import logging
+from contextlib import contextmanager
 import toml
+import win32file
 import win32gui
 import win32process
 import win32api
@@ -15,35 +17,8 @@ def main():
     args = get_args()
     args = update_args_by_toml(args, args.config_filename)
     setup_logging(args.log_filename)
-    previous_window_info = None
-    while True:
-        (foreground, topmost_window, are_windows_equal) = get_active_window_information()
-        current_window_info = (foreground, topmost_window, are_windows_equal)
-        if current_window_info and current_window_info != previous_window_info:
-            previous_window_info = current_window_info
-            current_time = datetime.datetime.now()
-            log_window_info(foreground, current_time)
-            display_window_info(foreground)
-            check_and_exec_by_window_info(foreground, args)
-            if not are_windows_equal:
-                display_window_info(topmost_window)
-                log_window_info(topmost_window, current_time, True)
-                print("Foreground and Topmost Window are different.")
-        time.sleep(1)
-
-def check_and_exec_by_window_info(foreground, args):
-    if foreground:
-        window_title, _process_name, _thread_id, _pid, _hwnd = foreground
-        if args.title_regex:
-            if re.search(args.title_regex, window_title):
-                print(f"Window title matches regex: {args.title_regex} : {window_title}")
-                if args.exec_cmd:
-                    try:
-                        subprocess.run(args.exec_cmd, shell=True, check=True)
-                    except subprocess.CalledProcessError as e:
-                        print(f"Command failed with return code {e.returncode}: {e}")
-                    except FileNotFoundError as e:
-                        print(f"Command not found: {e}")
+    with ipc_create_pipe_handle(args.pipe_name) as ipc_handle:
+        monitor_active_window(args, ipc_handle)
 
 def get_args():
     parser = argparse.ArgumentParser(description="Log active window information.")
@@ -66,6 +41,55 @@ def read_toml(filename):
     with open(filename, 'r', encoding='utf-8') as f:
         toml_data = toml.load(f)
     return toml_data
+
+def monitor_active_window(args, ipc_handle):
+    previous_window_info = None
+    while True:
+        current_window_info = get_current_window_info()
+        if is_window_info_changed(current_window_info, previous_window_info):
+            previous_window_info = current_window_info
+            handle_window_change(current_window_info, args, ipc_handle)
+        time.sleep(1)
+
+def get_current_window_info():
+    foreground, topmost_window, are_windows_equal = get_active_window_information()
+    return foreground, topmost_window, are_windows_equal
+
+def is_window_info_changed(current_window_info, previous_window_info):
+    return current_window_info and current_window_info != previous_window_info
+
+def handle_window_change(current_window_info, args, ipc_handle):
+    foreground, topmost_window, are_windows_equal = current_window_info
+    current_time = datetime.datetime.now()
+
+    log_window_info(foreground, current_time)
+    display_window_info(foreground)
+    check_and_ipc_by_window_info(foreground, args, ipc_handle)
+
+    if not are_windows_equal:
+        display_window_info(topmost_window)
+        log_window_info(topmost_window, current_time, is_topmost=True)
+        print("Foreground and Topmost Window are different.")
+
+def check_and_ipc_by_window_info(foreground, args, ipc_handle):
+    if not foreground:
+        return
+
+    window_title, _process_name, _thread_id, _pid, _hwnd = foreground
+    if not args.title_regex or not re.search(args.title_regex, window_title):
+        return
+
+    print(f"Window title matches regex: {args.title_regex} : {window_title}")
+    if not args.message:
+        return
+
+    try:
+        ipc_send_message(ipc_handle, args.message)
+
+    except subprocess.CalledProcessError as e:
+        print(f"Command failed with return code {e.returncode}: {e}")
+    except FileNotFoundError as e:
+        print(f"Command not found: {e}")
 
 def setup_logging(filename):
     logging.basicConfig(
@@ -90,7 +114,7 @@ def get_active_window_information():
     return foreground, topmost_window, are_windows_equal
 
 def get_topmost_window_in_active_monitor():
-    active_monitor = get_active_window_monitor()
+    active_monitor = get_active_monitor()
 
     def callback(hwnd, windows):
         if win32gui.IsWindowVisible(hwnd) and win32gui.IsWindowEnabled(hwnd):
@@ -105,7 +129,7 @@ def get_topmost_window_in_active_monitor():
 
     return windows[0] if windows else None
 
-def get_active_window_monitor():
+def get_active_monitor():
     hwnd = win32gui.GetForegroundWindow()
     if not hwnd:
         return None
@@ -163,6 +187,25 @@ def log_window_info(current_window_info, current_time, is_topmost=False):
             f"    window_title = \'It seems that the screensaver might be active.\'\n"
         )
     logging.info(log_message)
+
+@contextmanager
+def ipc_create_pipe_handle(pipe_name):
+    handle = win32file.CreateFile(
+        pipe_name,
+        win32file.GENERIC_READ | win32file.GENERIC_WRITE,
+        0, None,
+        win32file.OPEN_EXISTING,
+        0, None
+    )
+    try:
+        yield handle
+    finally:
+        win32file.CloseHandle(handle)
+
+def ipc_send_message(ipc_handle, message):
+    win32file.WriteFile(ipc_handle, message.encode())
+    resp = win32file.ReadFile(ipc_handle, 64*1024)
+    print(f"Server response: {resp[1].decode()}")
 
 if __name__ == "__main__":
     main()
