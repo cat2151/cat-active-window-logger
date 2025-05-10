@@ -6,6 +6,7 @@ import time
 import logging
 from contextlib import contextmanager
 import toml
+import win32pipe
 import win32file
 import win32gui
 import win32process
@@ -250,6 +251,8 @@ def log_window_info(current_window_info, current_time, is_topmost=False):
 @contextmanager
 def ipc_create_pipe_handle(pipe_name):
     try:
+        timeout_msec = 5000
+        win32pipe.WaitNamedPipe(pipe_name, timeout_msec)
         handle = win32file.CreateFile(
             pipe_name,
             win32file.GENERIC_READ | win32file.GENERIC_WRITE,
