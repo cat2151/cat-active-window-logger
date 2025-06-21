@@ -22,7 +22,7 @@ def track_active_window(args):
                 current_window_info, args, previous_window_info, previous_action
             )
             previous_window_info = current_window_info
-        time.sleep(1)
+        time.sleep(args.logging_interval_sec)
 
 def is_window_info_changed(current_window_info, previous_window_info):
     return current_window_info and current_window_info != previous_window_info
