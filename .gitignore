@@ -174,5 +174,5 @@ cython_debug/
 .pypirc
 
 #
-active_window_log.toml
 secrets/
+logs/
