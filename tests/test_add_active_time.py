@@ -22,7 +22,7 @@ def test_add_active_time():
             'process_id': 34568
         }
     ]
-    result = add_elapsed_time(infos)
+    result = add_elapsed_time(infos, "%Y/%m/%d %H:%M:%S")
     assert result[0]['elapsed_time'] == '01:00:00'
     assert result[1]['elapsed_time'] == ''
     print('test_add_active_time passed')
