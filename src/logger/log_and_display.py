@@ -1,12 +1,21 @@
 import logging
 
 def setup_logging(filename):
-    logging.basicConfig(
-        filename=filename,
-        level=logging.INFO,
-        format="%(message)s",
-        encoding="utf-8"
-    )
+    def close_and_remove_all_handlers(logger):
+        if logger.handlers:
+            for handler in logger.handlers[:]:
+                handler.close()
+                logger.removeHandler(handler)
+    def add_file_handler(logger, filename):
+        file_handler = logging.FileHandler(filename, encoding="utf-8")
+        file_handler.setLevel(logging.INFO)
+        formatter = logging.Formatter("%(message)s")
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+        logger.setLevel(logging.INFO)
+    root = logging.getLogger()
+    close_and_remove_all_handlers(root)
+    add_file_handler(root, filename)
 
 def display_window_info(current_window_info):
     if not current_window_info:
