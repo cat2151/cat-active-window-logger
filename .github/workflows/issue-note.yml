@@ -40,7 +40,7 @@ jobs:
             const notePath = `issue-notes/${{ github.event.issue.number }}.md`;
             const repo = context.repo.repo;
             const owner = context.repo.owner;
-            const noteUrl = `https://github.com/${owner}/${repo}/blob/${process.env.GITHUB_SHA}/${notePath}`;
+            const noteUrl = `https://github.com/${owner}/${repo}/blob/main/${notePath}`;
             const newBody = `[issue-notes/${{ github.event.issue.number }}.md](${noteUrl})\n\n${{ github.event.issue.body }}`;
             await github.rest.issues.update({
               owner,
