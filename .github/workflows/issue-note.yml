@@ -20,7 +20,7 @@ jobs:
         id: generate_md
         run: |
           mkdir -p issue-notes
-          echo "# ${{ github.event.issue.title }} #${{ github.event.issue.number }}" > issue-notes/${{ github.event.issue.number }}.md
+          echo "# issue ${{ github.event.issue.title }} #${{ github.event.issue.number }}" > issue-notes/${{ github.event.issue.number }}.md
           echo "[issues #${{ github.event.issue.number }}](${{ github.event.issue.html_url }})" >> issue-notes/${{ github.event.issue.number }}.md
           echo "" >> issue-notes/${{ github.event.issue.number }}.md
           echo "${{ github.event.issue.body }}" >> issue-notes/${{ github.event.issue.number }}.md
