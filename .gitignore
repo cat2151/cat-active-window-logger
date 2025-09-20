@@ -176,4 +176,5 @@ cython_debug/
 #
 secrets/
 logs/
+logs_enhanced/
 copilot-instructions.md
