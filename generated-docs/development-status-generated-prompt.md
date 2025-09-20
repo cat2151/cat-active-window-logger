@@ -1,4 +1,4 @@
-Last updated: 2025-09-20
+Last updated: 2025-09-21
 
 # 開発状況生成プロンプト（開発者向け）
 
@@ -109,6 +109,7 @@ Last updated: 2025-09-20
 - .github/actions-tmp/.github/workflows/call-issue-note.yml
 - .github/actions-tmp/.github/workflows/call-translate-readme.yml
 - .github/actions-tmp/.github/workflows/callgraph.yml
+- .github/actions-tmp/.github/workflows/check-recent-human-commit.yml
 - .github/actions-tmp/.github/workflows/daily-project-summary.yml
 - .github/actions-tmp/.github/workflows/issue-note.yml
 - .github/actions-tmp/.github/workflows/translate-readme.yml
@@ -122,7 +123,6 @@ Last updated: 2025-09-20
 - .github/actions-tmp/.github_automation/callgraph/scripts/analyze-codeql.cjs
 - .github/actions-tmp/.github_automation/callgraph/scripts/callgraph-utils.cjs
 - .github/actions-tmp/.github_automation/callgraph/scripts/check-codeql-exists.cjs
-- .github/actions-tmp/.github_automation/callgraph/scripts/check-commits.cjs
 - .github/actions-tmp/.github_automation/callgraph/scripts/check-node-version.cjs
 - .github/actions-tmp/.github_automation/callgraph/scripts/common-utils.cjs
 - .github/actions-tmp/.github_automation/callgraph/scripts/copy-commit-results.cjs
@@ -130,6 +130,7 @@ Last updated: 2025-09-20
 - .github/actions-tmp/.github_automation/callgraph/scripts/find-process-results.cjs
 - .github/actions-tmp/.github_automation/callgraph/scripts/generate-html-graph.cjs
 - .github/actions-tmp/.github_automation/callgraph/scripts/generateHTML.cjs
+- .github/actions-tmp/.github_automation/check_recent_human_commit/scripts/check-recent-human-commit.cjs
 - .github/actions-tmp/.github_automation/project_summary/docs/daily-summary-setup.md
 - .github/actions-tmp/.github_automation/project_summary/prompts/development-status-prompt.md
 - .github/actions-tmp/.github_automation/project_summary/prompts/project-overview-prompt.md
@@ -189,12 +190,13 @@ Last updated: 2025-09-20
 - .github/actions-tmp/package.json
 - .github/actions-tmp/src/main.js
 - .github/workflows/call-daily-project-summary.yml
-- .github/workflows/issue-note.yml
+- .github/workflows/call-issue-note.yml
 - .gitignore
 - .pylintrc
 - .vscode/settings.json
 - LICENSE
 - README.md
+- aggregate_process_time.bat
 - cat_active_window_logger.bat
 - dump_log.bat
 - issue-notes/1.md
@@ -211,6 +213,7 @@ Last updated: 2025-09-20
 - src/log_enhance_active_time/__init__.py
 - src/log_enhance_active_time/__main__.py
 - src/log_enhance_active_time/add_active_time.py
+- src/log_processor/aggregate_process_time.py
 - src/log_processor/dump_log.py
 - src/logger/action_by_ipc.py
 - src/logger/cat_active_window_logger.py
@@ -223,59 +226,6 @@ Last updated: 2025-09-20
 - tests/test_add_active_time.py
 
 ## 現在のオープンIssues
-## [Issue #10](../issue-notes/10.md): logのrotationの方針を洗い出して整理する
-[issue-notes/10.md](https://github.com/cat2151/cat-active-window-logger/blob/main/issue-notes/10.md)...
-ラベル: 
---- issue-notes/10.md の内容 ---
-
-```markdown
-# issue logのrotationの方針を洗い出して整理する #10
-[issues #10](https://github.com/cat2151/cat-active-window-logger/issues/10)
-
-
-
-```
-
-## [Issue #9](../issue-notes/9.md): エンドユーザーが使うには向かない。どこまで自分以外のユーザーに使いやすくするか、project方針を整理する
-[issue-notes/9.md](https://github.com/cat2151/cat-active-window-logger/blob/main/issue-notes/9.md)...
-ラベル: 
---- issue-notes/9.md の内容 ---
-
-```markdown
-# issue エンドユーザーが使うには向かない。どこまで自分以外のユーザーに使いやすくするか、project方針を整理する #9
-[issues #9](https://github.com/cat2151/cat-active-window-logger/issues/9)
-
-
-
-```
-
-## [Issue #7](../issue-notes/7.md): logが日をまたいだのに前日のfilenameのまま追記が続いてしまっている
-[issue-notes/7.md](https://github.com/cat2151/cat-active-window-logger/blob/main/issue-notes/7.md)...
-ラベル: 
---- issue-notes/7.md の内容 ---
-
-```markdown
-# issue logが日をまたいだのに前日のfilenameのまま追記が続いてしまっている #7
-[issues #7](https://github.com/cat2151/cat-active-window-logger/issues/7)
-
-# これまでの課題
-- logが日をまたいだのに前日のfilenameのまま追記が続いてしまっている
-
-# プロンプト案
-- logが日をまたいだのに前日のfilenameのまま追記が続いてしまっています。
-- 以下の挙動にしてください：
-    - 日をまたいだのち初回のlog書き込み時は、
-    - これまでのlogをcloseし、
-    - 新たにその日のfilenameのlogへのappendを開始する
-- コードベースのloggerのpyをreadして進めてください。
-
-# 結果
-- agentに書かせて、指摘して、修正させた
-- close条件は、翌日にlogが期待値どおりの動作になっていること
-- 様子見する
-
-```
-
 ## [Issue #5](../issue-notes/5.md): process_nameでgroupingした合計時間logを入力とし、tkinterによるGUIで表示する
 [issue-notes/5.md](https://github.com/cat2151/cat-active-window-logger/blob/main/issue-notes/5.md)...
 ラベル: 
@@ -287,49 +237,47 @@ Last updated: 2025-09-20
 
 # これまでの課題
 - 例えば何分SNSをしていたかが、GUIですぐにわからない
-    - 例、今まさにSNSを、自分で決めた5分を超過してやってしまったら、
-        - リマインダーとして、その旨を、GUIで表示する
-            - GUIは
-                - バルーン的に、フォーカスを奪わない
-                - フォーカスを奪わないし、適切な条件で、最背面化し、邪魔にならない
-                - これらは 別project 格ゲーボタンチャレンジ で実現済み
+
+# 対策案
+- 最終的なイメージ、今まさにSNSを、自分で決めた5分を超過してやってしまったら、
+    - リマインダーとして、その旨を、GUIで表示する
+        - GUIは
+            - バルーン的に、フォーカスを奪わない
+            - フォーカスを奪わないし、適切な条件で、最背面化し、邪魔にならない
+            - これらは 別project 格ゲーボタンチャレンジ で実現済み
+- issue #5 当issueで実装する案
+    - GUIは常時表示されていて
+    - 1分ごとに集計を行い（処理負荷が大きいが試作品なのでOK、あとで根本的に変更する）
+    - 集計結果の `chrome 本日の利用時間 5分28秒"` 等を、GUIに表示する
 
 # 前提
 - [issues #4](https://github.com/cat2151/cat-active-window-logger/issues/4)
+    - 実装済み
 
+# どうする？
+- 入力案
+    - `logs_enhanced/chrome_elapsed_time_log_20250920.toml`
+- 出力案
+    - `total_active_time = "00:05:28"`
+    - を、加工して、tkinter windowに表示する。シンプルなwindow。
+    - 加工結果は： `chrome 本日の利用時間 5分28秒"`
+- 加工処理の案
+    - 既存のlog関連の関数をGUIから1分ごとに呼び出す
+        - 処理負荷が大きいが試作品なのでOK、あとで根本的に変更する
+- GUIの案
+    - tkinterを用いた最もシンプルなwindow
+        - まずシンプルにwindow titleに表示とする
+            - あとで仕様変更してwindow内のcanvasに文字を表示とする
+- toml設定の案
+    - 既存のtoml設定を参考に、input用のlog filename等をtomlで定義する
+- ソース構成の案
+    - src/active_time_reminder/
+        - active_time_reminder.py ※main
+        - gui.py ※tkinter
+        - process_log.py ※log
+    - 名前は仮。検証データを得たらそれを元に見直す。
 
-↑あとで整理する
-
-```
-
-## [Issue #4](../issue-notes/4.md): 次のwindowに切り替わるまでの時間のlog、を入力とし、tomlで指定した条件例えばまずはprocess_nameでgroupingした合計時間logを出力する
-[issue-notes/4.md](https://github.com/cat2151/cat-active-window-logger/blob/main/issue-notes/4.md)...
-ラベル: 
---- issue-notes/4.md の内容 ---
-
-```markdown
-# issue 次のwindowに切り替わるまでの時間のlog、を入力とし、tomlで指定した条件例えばまずはprocess_nameでgroupingした合計時間logを出力する #4
-[issues #4](https://github.com/cat2151/cat-active-window-logger/issues/4)
-
-# これまでの課題
-- 例えば何分SNSをしていたかがわからない
-
-# 前提
-- [issues #3](https://github.com/cat2151/cat-active-window-logger/issues/3)
-
-# 対策案
-- 時間のlog（時刻のlogを加工したもの）が得られた前提で、
-- それを例えばprocess_name chrome.exe でgroupingする
-- でcrhome.exeの合計時間のlogを出力する
-- もちろん、これだけでは、何分SNSしていたかを知るには不足
-    - 何が不足か、次の手はどれがいいか、の可視化のための検証である
-        - 例えば、より細かいgrouping条件や、ロジックが必要な想定
-            - それらを今の段階から想定するよりは、
-                - まずデータを取ってからのほうがスムーズである想定
-- まずハードコーディングでagentに実装させる
-- のち仕様変更してagentに実装させる。issues 3 と同じ手法。
-
-↑あとで整理する
+- 日次バッチでagent用promptを生成させる
 
 ```
 
@@ -371,46 +319,6 @@ Last updated: 2025-09-20
 ```
 
 ## ドキュメントで言及されているファイルの内容
-### .github/actions-tmp/issue-notes/10.md
-```md
-# issue callgraph を他projectから使いやすくする #10
-[issues #10](https://github.com/cat2151/github-actions/issues/10)
-
-# ブレインストーミング
-- 洗い出し
-    - 他projectから使う場合の問題を洗い出す、今見えている範囲で、手早く、このnoteに可視化する
-    - 洗い出したものは、一部は別issueに切り分ける
-- close条件
-    - まずは4つそれぞれを個別のdirに切り分けてtest greenとなること、とするつもり
-    - それ以外は別issueに切り分けるつもり
-- 切り分け
-    - 別dirに切り分ける
-        - 課題、`codeql-queries/` が `.github/` 配下にある。対策、`.github_automation/callgraph_enhanced/codeql-queries/` とする
-        - 課題、scriptも、`.github/`配下にある。対策、移動する
-        - 方法、agentを試し、ハルシネーションで時間が取られるなら人力に切り替える
-- test
-    - local WSL + act でtestする
-- 名前
-    - 課題、名前 enhanced が不要。対策、名前から enhanced を削除してymlなどもそれぞれ同期して修正すべし
-- docs
-    - call導入手順を書く
-
-# 状況
-- 上記のうち、別dirへの切り分け等は実施済みのはず
-- どうする？
-    - それをここに可視化する。
-
-```
-
-### issue-notes/10.md
-```md
-# issue logのrotationの方針を洗い出して整理する #10
-[issues #10](https://github.com/cat2151/cat-active-window-logger/issues/10)
-
-
-
-```
-
 ### .github/actions-tmp/issue-notes/2.md
 ```md
 # issue GitHub Actions「関数コールグラフhtmlビジュアライズ生成」を共通ワークフロー化する #2
@@ -617,235 +525,6 @@ jobs:
 
 ```
 
-### .github/actions-tmp/issue-notes/4.md
-```md
-# issue GitHub Actions「project概要生成」を共通ワークフロー化する #4
-[issues #4](https://github.com/cat2151/github-actions/issues/4)
-
-# prompt
-```
-あなたはGitHub Actionsと共通ワークフローのスペシャリストです。
-このymlファイルを、以下の2つのファイルに分割してください。
-1. 共通ワークフロー       cat2151/github-actions/.github/workflows/daily-project-summary.yml
-2. 呼び出し元ワークフロー cat2151/github-actions/.github/workflows/call-daily-project-summary.yml
-まずplanしてください
-```
-
-# 結果、あちこちハルシネーションのあるymlが生成された
-- agentの挙動があからさまにハルシネーション
-    - インデントが修正できない、「失敗した」という
-    - 構文誤りを認識できない
-- 人力で修正した
-
-# このagentによるセルフレビューが信頼できないため、別のLLMによるセカンドオピニオンを試す
-```
-あなたはGitHub Actionsと共通ワークフローのスペシャリストです。
-以下の2つのファイルをレビューしてください。最優先で、エラーが発生するかどうかだけレビューてください。エラー以外の改善事項のチェックをするかわりに、エラー発生有無チェックに最大限注力してください。
-
---- 呼び出し元
-
-name: Call Daily Project Summary
-
-on:
-  schedule:
-    # 日本時間 07:00 (UTC 22:00 前日)
-    - cron: '0 22 * * *'
-  workflow_dispatch:
-
-jobs:
-  call-daily-project-summary:
-    uses: cat2151/github-actions/.github/workflows/daily-project-summary.yml
-    secrets:
-      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-
---- 共通ワークフロー
-name: Daily Project Summary
-on:
-  workflow_call:
-
-jobs:
-  generate-summary:
-    runs-on: ubuntu-latest
-
-    permissions:
-      contents: write
-      issues: read
-      pull-requests: read
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0  # 履歴を取得するため
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install dependencies
-        run: |
-          # 一時的なディレクトリで依存関係をインストール
-          mkdir -p /tmp/summary-deps
-          cd /tmp/summary-deps
-          npm init -y
-          npm install @google/generative-ai @octokit/rest
-          # generated-docsディレクトリを作成
-          mkdir -p $GITHUB_WORKSPACE/generated-docs
-
-      - name: Generate project summary
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          NODE_PATH: /tmp/summary-deps/node_modules
-        run: |
-          node .github/scripts/generate-project-summary.cjs
-
-      - name: Check for generated summaries
-        id: check_summaries
-        run: |
-          if [ -f "generated-docs/project-overview.md" ] && [ -f "generated-docs/development-status.md" ]; then
-            echo "summaries_generated=true" >> $GITHUB_OUTPUT
-          else
-            echo "summaries_generated=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Commit and push summaries
-        if: steps.check_summaries.outputs.summaries_generated == 'true'
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          # package.jsonの変更のみリセット（generated-docsは保持）
-          git restore package.json 2>/dev/null || true
-          # サマリーファイルのみを追加
-          git add generated-docs/project-overview.md
-          git add generated-docs/development-status.md
-          git commit -m "Update project summaries (overview & development status)"
-          git push
-
-      - name: Summary generation result
-        run: |
-          if [ "${{ steps.check_summaries.outputs.summaries_generated }}" == "true" ]; then
-            echo "✅ Project summaries updated successfully"
-            echo "📊 Generated: project-overview.md & development-status.md"
-          else
-            echo "ℹ️ No summaries generated (likely no user commits in the last 24 hours)"
-          fi
-```
-
-# 上記promptで、2つのLLMにレビューさせ、合格した
-
-# 細部を、先行する2つのymlを参照に手直しした
-
-# ローカルtestをしてからcommitできるとよい。方法を検討する
-- ローカルtestのメリット
-    - 素早く修正のサイクルをまわせる
-    - ムダにgit historyを汚さない
-        - これまでの事例：「実装したつもり」「エラー。修正したつもり」「エラー。修正したつもり」...（以降エラー多数）
-- 方法
-    - ※検討、WSL + act を環境構築済みである。test可能であると判断する
-    - 呼び出し元のURLをコメントアウトし、相対パス記述にする
-    - ※備考、テスト成功すると結果がcommit pushされる。それでよしとする
-- 結果
-    - OK
-    - secretsを簡略化できるか試した、できなかった、現状のsecrets記述が今わかっている範囲でベストと判断する
-    - OK
-
-# test green
-
-# commit用に、yml 呼び出し元 uses をlocal用から本番用に書き換える
-
-# closeとする
-
-```
-
-### issue-notes/4.md
-```md
-# issue 次のwindowに切り替わるまでの時間のlog、を入力とし、tomlで指定した条件例えばまずはprocess_nameでgroupingした合計時間logを出力する #4
-[issues #4](https://github.com/cat2151/cat-active-window-logger/issues/4)
-
-# これまでの課題
-- 例えば何分SNSをしていたかがわからない
-
-# 前提
-- [issues #3](https://github.com/cat2151/cat-active-window-logger/issues/3)
-
-# 対策案
-- 時間のlog（時刻のlogを加工したもの）が得られた前提で、
-- それを例えばprocess_name chrome.exe でgroupingする
-- でcrhome.exeの合計時間のlogを出力する
-- もちろん、これだけでは、何分SNSしていたかを知るには不足
-    - 何が不足か、次の手はどれがいいか、の可視化のための検証である
-        - 例えば、より細かいgrouping条件や、ロジックが必要な想定
-            - それらを今の段階から想定するよりは、
-                - まずデータを取ってからのほうがスムーズである想定
-- まずハードコーディングでagentに実装させる
-- のち仕様変更してagentに実装させる。issues 3 と同じ手法。
-
-↑あとで整理する
-
-```
-
-### .github/actions-tmp/issue-notes/7.md
-```md
-# issue issue note生成できるかのtest用 #7
-[issues #7](https://github.com/cat2151/github-actions/issues/7)
-
-- 生成できた
-- closeとする
-
-```
-
-### issue-notes/7.md
-```md
-# issue logが日をまたいだのに前日のfilenameのまま追記が続いてしまっている #7
-[issues #7](https://github.com/cat2151/cat-active-window-logger/issues/7)
-
-# これまでの課題
-- logが日をまたいだのに前日のfilenameのまま追記が続いてしまっている
-
-# プロンプト案
-- logが日をまたいだのに前日のfilenameのまま追記が続いてしまっています。
-- 以下の挙動にしてください：
-    - 日をまたいだのち初回のlog書き込み時は、
-    - これまでのlogをcloseし、
-    - 新たにその日のfilenameのlogへのappendを開始する
-- コードベースのloggerのpyをreadして進めてください。
-
-# 結果
-- agentに書かせて、指摘して、修正させた
-- close条件は、翌日にlogが期待値どおりの動作になっていること
-- 様子見する
-
-```
-
-### .github/actions-tmp/issue-notes/9.md
-```md
-# issue 関数コールグラフhtmlビジュアライズが0件なので、原因を可視化する #9
-[issues #9](https://github.com/cat2151/github-actions/issues/9)
-
-# agentに修正させたり、人力で修正したりした
-- agentがハルシネーションし、いろいろ根の深いバグにつながる、エラー隠蔽などを仕込んでいたため、検知が遅れた
-- 詳しくはcommit logを参照のこと
-- WSL + actの環境を少し変更、act起動時のコマンドライン引数を変更し、generated-docsをmountする（ほかはデフォルト挙動であるcpだけにする）ことで、デバッグ情報をコンテナ外に出力できるようにし、デバッグを効率化した
-
-# test green
-
-# closeとする
-
-```
-
-### issue-notes/9.md
-```md
-# issue エンドユーザーが使うには向かない。どこまで自分以外のユーザーに使いやすくするか、project方針を整理する #9
-[issues #9](https://github.com/cat2151/cat-active-window-logger/issues/9)
-
-
-
-```
-
 ### issue-notes/5.md
 ```md
 # issue process_nameでgroupingした合計時間logを入力とし、tkinterによるGUIで表示する #5
@@ -853,36 +532,74 @@ jobs:
 
 # これまでの課題
 - 例えば何分SNSをしていたかが、GUIですぐにわからない
-    - 例、今まさにSNSを、自分で決めた5分を超過してやってしまったら、
-        - リマインダーとして、その旨を、GUIで表示する
-            - GUIは
-                - バルーン的に、フォーカスを奪わない
-                - フォーカスを奪わないし、適切な条件で、最背面化し、邪魔にならない
-                - これらは 別project 格ゲーボタンチャレンジ で実現済み
+
+# 対策案
+- 最終的なイメージ、今まさにSNSを、自分で決めた5分を超過してやってしまったら、
+    - リマインダーとして、その旨を、GUIで表示する
+        - GUIは
+            - バルーン的に、フォーカスを奪わない
+            - フォーカスを奪わないし、適切な条件で、最背面化し、邪魔にならない
+            - これらは 別project 格ゲーボタンチャレンジ で実現済み
+- issue #5 当issueで実装する案
+    - GUIは常時表示されていて
+    - 1分ごとに集計を行い（処理負荷が大きいが試作品なのでOK、あとで根本的に変更する）
+    - 集計結果の `chrome 本日の利用時間 5分28秒"` 等を、GUIに表示する
 
 # 前提
 - [issues #4](https://github.com/cat2151/cat-active-window-logger/issues/4)
+    - 実装済み
 
+# どうする？
+- 入力案
+    - `logs_enhanced/chrome_elapsed_time_log_20250920.toml`
+- 出力案
+    - `total_active_time = "00:05:28"`
+    - を、加工して、tkinter windowに表示する。シンプルなwindow。
+    - 加工結果は： `chrome 本日の利用時間 5分28秒"`
+- 加工処理の案
+    - 既存のlog関連の関数をGUIから1分ごとに呼び出す
+        - 処理負荷が大きいが試作品なのでOK、あとで根本的に変更する
+- GUIの案
+    - tkinterを用いた最もシンプルなwindow
+        - まずシンプルにwindow titleに表示とする
+            - あとで仕様変更してwindow内のcanvasに文字を表示とする
+- toml設定の案
+    - 既存のtoml設定を参考に、input用のlog filename等をtomlで定義する
+- ソース構成の案
+    - src/active_time_reminder/
+        - active_time_reminder.py ※main
+        - gui.py ※tkinter
+        - process_log.py ※log
+    - 名前は仮。検証データを得たらそれを元に見直す。
 
-↑あとで整理する
+- 日次バッチでagent用promptを生成させる
 
 ```
 
 ## 最近の変更（過去7日間）
 ### コミット履歴:
-8b2740a 日次バッチでdeveopment statusを生成させるようにした、つもり
-91c6759 #4 mdメンテ
+caeb297 #5 mdメンテ
+3989095 前処理漏れの修正
+571dc90 fix #9 対象userは自分のみとし、それ以外をスコープ外とし、READMEに明記したので、closeとする
+e054cb7 fix #4 test greenなのでcloseとする
+cb4bea7 vscode settings formatter等
+7fc5c9a ignore copilot instructions
+a96d66a close #10 現在なくても運用できているので、保留、後回しとし、closeとする
+136ddff issue-noteは共通ワークフローを呼び出すようにした。目的は、development status生成の誤爆を防止する用。
+55b2c45 #4 mdメンテ
+e9d71c4 #4 mdメンテ
 
 ### 変更されたファイル:
-.github/workflows/call-daily-project-summary.yml
-.github/workflows/issue-note.yml
+.gitignore
+.vscode/settings.json
+README.md
+aggregate_process_time.bat
 issue-notes/10.md
 issue-notes/4.md
-issue-notes/7.md
-issue-notes/8.md
+issue-notes/5.md
 issue-notes/9.md
-src/logger/log_and_display.py
+src/log_processor/aggregate_process_time.py
 
 
 ---
-Generated at: 2025-09-20 18:05:02 JST
+Generated at: 2025-09-21 07:06:51 JST
