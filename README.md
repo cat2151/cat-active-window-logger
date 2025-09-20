@@ -95,3 +95,8 @@
         - いろいろな仕様がありうるので、userごとに任意のrotateを可能に
             - 実際はrotateせずに圧縮の運用が多い想定
     - 必要になるまでは保留とし、優先度を下げ、issueをシンプルにする : [issue #10](./issue-notes/10.md)
+- 対象user
+    - 自分only
+    - 自分以外のuserはスコープ外とする
+        - このprojectはそうしないとしがらみで止まってしまう、と判断した
+    - [issue #9](./issue-notes/9.md)
