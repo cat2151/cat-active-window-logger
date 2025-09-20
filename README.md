@@ -46,10 +46,6 @@
     - 常駐部
         - logger
         - checker
-    - log rotation部
-        - loggerと切り分ける
-            - いろいろな仕様がありうるので、userごとに任意のrotateを可能に
-                - 実際はrotateせずに圧縮の運用が多い想定
     - log加工部
         - input : log
         - process : いろいろな条件でフィルタリング等
@@ -92,3 +88,10 @@
         - tsv等の場合、可読性が（TOMLよりは）低い
             - ほしいのは、要素ごとに要素名もlogging
                 - なぜなら開発中に各種中間ファイルをtestしやすい（読みやすい）
+
+# 備忘、いろいろ
+- log rotation部
+    - loggerと切り分ける
+        - いろいろな仕様がありうるので、userごとに任意のrotateを可能に
+            - 実際はrotateせずに圧縮の運用が多い想定
+    - 必要になるまでは保留とし、優先度を下げ、issueをシンプルにする : [issue #10](./issue-notes/10.md)
