@@ -1,55 +1,50 @@
-Last updated: 2025-09-21
+Last updated: 2025-09-23
 
 # Development Status
 
 ## 現在のIssues
-- [Issue #5](../issue-notes/5.md) は、プロセスごとの合計アクティブ時間ログをTkinter GUIでリアルタイム表示し、利用状況を可視化する機能の追加を目指しています。
-- [Issue #2](../issue-notes/2.md) は、TOML定義のアクション実行ログを日別ファイルで別途出力し、アクションの可視化とimmutableな情報保持を図ります。
-- 現在、GUI表示機能とアクションログ機能の設計と実装が主な開発課題となっています。
+- [Issue #5](../issue-notes/5.md)では、`process_name`でグループ化した合計利用時間をTkinterによるGUIで表示する機能が課題となっており、現在GUIの雛形が存在します。
+- [Issue #2](../issue-notes/2.md)では、`toml actions`の実行状況を可視化するため、アクションログを日単位で専用ファイルに出力する機能の追加が求められています。
+- これらのタスクは、それぞれユーザーのアクティブタイムの可視化と、システム内部のアクション実行状況の可視化を目的としています。
 
 ## 次の一手候補
-1. [Issue #5](../issue-notes/5.md) Tkinter GUIによる利用時間表示機能の初期実装
-   - 最初の小さな一歩: `src/active_time_reminder/` ディレクトリを作成し、その中に`gui.py`ファイルを作成して、最小限のTkinterウィンドウを表示するコードを記述し、実行できることを確認する。
-   - Agent実行プロンプト:
+1. [Issue #5] GUIにアクティブ時間集計結果の表示領域を実装する
+   - 最初の小さな一歩: `src/active_time_reminder/gui.py` に、プロセスごとの集計結果を表示するための新しい `ttk.Label` ウィジェットを追加し、ダミーのテキスト（例: "Chrome: 5分28秒", "VSCode: 3時間15分"）を複数行で表示できるようにする。
+   - Agent実行プロンプ:
      ```
      対象ファイル: `src/active_time_reminder/gui.py`
 
-     実行内容: Tkinterを用いたシンプルなウィンドウ表示の骨格を作成してください。具体的には、ウィンドウが起動し、タイトルが表示されることを目的とします。`if __name__ == "__main__":`ブロックでウィンドウを初期化・実行する処理を含めてください。
+     実行内容: GUIにprocess_nameごとの合計時間logを表示するための領域を追加する。具体的には、既存の`status_frame`内に新しい`ttk.Label`または`ttk.Frame`と複数の`ttk.Label`を追加し、ダミーの集計結果データ（例: `{"Chrome": "00:05:28", "VSCode": "03:15:00"}`)をフォーマットして表示できるように修正してください。複数行表示を可能にするレイアウトを検討してください。
 
-     確認事項: 新規ファイル作成であるため依存関係は少ないですが、`src/`ディレクトリ直下に新しいディレクトリを作成する際の命名規則や、将来的に`active_time_reminder.py` (main) からこの`gui.py`を呼び出すことを想定して、Tkinterの`mainloop()`をブロックしない設計にするか検討してください。
+     確認事項: 既存のGUIコンポーネントの配置やレイアウト（grid, pack）との整合性、およびレスポンシブデザインへの影響がないことを確認してください。
 
-     期待する出力: `src/active_time_reminder/gui.py`ファイルの内容をmarkdown形式で出力してください。ファイル内容には、tkinterをインポートし、シンプルなウィンドウを表示・実行するコードを含めてください。
+     期待する出力: 修正された `src/active_time_reminder/gui.py` ファイル。
      ```
 
-2. [Issue #2](../issue-notes/2.md) TOMLアクションログ出力機能の実装
-   - 最初の小さな一歩: `src/logger/action_by_ipc.py`に、TOML形式でアクションログをファイルに追記するプライベートメソッド`_log_action_to_file`を追加する。このメソッドは、`action_information`ディクショナリを受け取り、日別のアクションログファイル（例: `logs_actions/YYYYMMDD.toml`）に追記する機能を実装する。
+2. [Issue #5] GUI向けに日次アクティブ時間集計ロジックを切り出す
+   - 最初の小さな一歩: `src/active_time_reminder/process_log.py` を新規作成し、`src/log_processor/aggregate_process_time.py` のロジックを参考に、現在の日付のアクティブ時間をプロセスごとに集計し、GUIで表示しやすい形式（例: `{"process_name": "elapsed_time_str"}` の辞書）で返す関数を実装する。
+   - Agent実行プロンプト:
+     ```
+     対象ファイル: `src/log_processor/aggregate_process_time.py` と新規作成する `src/active_time_reminder/process_log.py`
+
+     実行内容: `src/active_time_reminder/process_log.py` を新規作成し、`src/log_processor/aggregate_process_time.py` の集計ロジックを再利用または参照して、指定された日付（デフォルトは当日）のアクティブ時間をプロセス名ごとに集計し、`{"process_name": "HH:MM:SS"}` の形式の辞書を返す関数 `get_daily_active_time_summary()` を実装してください。`src/log_processor/aggregate_process_time.py` から必要な関数やロジックをインポートまたはコピーして利用することを検討してください。
+
+     確認事項: `src/log_processor/aggregate_process_time.py` の既存の機能への影響がないこと。ログファイルのパスが正しく解決され、集計対象のログを読み込めることを確認してください。
+
+     期待する出力: 新規作成された `src/active_time_reminder/process_log.py` ファイル。
+     ```
+
+3. [Issue #2] toml actionsの実行ログを専用ファイルに出力する
+   - 最初の小さな一歩: `src/logger/action_by_ipc.py` 内でアクションが実行される箇所を特定し、その際に実行されたアクションの情報を `logs_actions/` ディレクトリ配下の `YYYYMMDD.toml` ファイルにTOML形式で追記する機能を追加する。まずはダミーのファイルパスと内容で良いので、追記処理を記述する。
    - Agent実行プロンプト:
      ```
      対象ファイル: `src/logger/action_by_ipc.py`
 
-     実行内容: `action_by_ipc.py`に、TOML形式でアクション情報をファイルに追記する新しいプライベートメソッド`_log_action_to_file(self, action_information)`を追加してください。このメソッドは、ログファイルパスを生成するロジック（`logs_actions`ディレクトリを使用し、日付ベースのファイル名にする）、ファイルへの追記処理、およびエラーハンドリングを含めてください。
+     実行内容: `src/logger/action_by_ipc.py` 内でアクションが実行される箇所を特定し、その際に実行されたアクションの情報を `logs_actions/YYYYMMDD.toml` という形式のファイルにTOML形式で追記する処理を追加してください。ログのフォーマットはIssue #2の「出力イメージ」に従い、`[[action_information]] timestamp = "～" actions = ～` となるように実装してください。ログファイルが存在しない場合は新規作成し、既に存在する場合は追記するようにしてください。`logs_actions` ディレクトリが存在しない場合は作成するようにしてください。
 
-     確認事項: 既存のクラス構造や他のメソッドへの影響がないか、ファイルパス生成のロジックが既存のログファイルパス生成と整合性が取れているか、およびTOML形式での書き込みに`tomli-w`などのライブラリが必要か確認してください（もし必要なら、その旨をコメントで記述）。
+     確認事項: 既存のログ出力処理との競合がないこと。ファイルパスの生成が日単位であること。ファイルI/Oエラーのハンドリング。toml形式のデータが正しく書き込まれることを確認してください。
 
-     期待する出力: `_log_action_to_file`メソッドが追加された`src/logger/action_by_ipc.py`の更新された内容をmarkdown形式で出力してください。
-     ```
-
-3. [Issue #5](../issue-notes/5.md) のためのログ集計処理の組み込み検討
-   - 最初の小さな一歩: `src/log_processor/aggregate_process_time.py`を分析し、[Issue #5](../issue-notes/5.md)でGUIから「1分ごとに集計」を行う際に、`aggregate_process_time`関数をどのように呼び出し、その結果をGUIで利用する形式に変換するかを検討する。
-   - Agent実行プロンプト:
-     ```
-     対象ファイル: `src/log_processor/aggregate_process_time.py`
-
-     実行内容: [Issue #5](../issue-notes/5.md)の要件である「1分ごとの集計をGUIから呼び出す」という観点から、`src/log_processor/aggregate_process_time.py`内の`aggregate_process_time`関数の現在の機能と、そのGUIからの利用方法について分析してください。具体的には、
-     1. 関数がGUIから呼び出される際に必要な入力（ファイルパス、期間など）
-     2. 関数が返す出力形式
-     3. 1分ごとに呼び出す際のパフォーマンス上の懸念（もしあれば）
-     4. GUIに表示するために、出力結果をどのように加工すべきか
-     について、markdown形式で考察を記述してください。
-
-     確認事項: 現在の`aggregate_process_time.py`が他のモジュールからどのように利用されているか、その依存関係を考慮し、変更が必要な場合は最小限に抑えるよう検討してください。
-
-     期待する出力: 上記の分析内容を詳細に記述したmarkdown形式のレポートを生成してください。
+     期待する出力: 修正された `src/logger/action_by_ipc.py` ファイル。
 
 ---
-Generated at: 2025-09-21 07:07:11 JST
+Generated at: 2025-09-23 07:08:19 JST

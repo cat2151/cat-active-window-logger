@@ -1,4 +1,4 @@
-Last updated: 2025-09-21
+Last updated: 2025-09-23
 
 # 開発状況生成プロンプト（開発者向け）
 
@@ -210,6 +210,7 @@ Last updated: 2025-09-21
 - issue-notes/8.md
 - issue-notes/9.md
 - log_enhance_active_time.bat
+- src/active_time_reminder/gui.py
 - src/log_enhance_active_time/__init__.py
 - src/log_enhance_active_time/__main__.py
 - src/log_enhance_active_time/add_active_time.py
@@ -277,7 +278,11 @@ Last updated: 2025-09-21
         - process_log.py ※log
     - 名前は仮。検証データを得たらそれを元に見直す。
 
-- 日次バッチでagent用promptを生成させる
+# 日次バッチでagent用promptを生成させる
+- agentに投げた
+- 手短にレビューしたところ、テンプレート状態で、機能がないように見える
+- どうする？
+    - 実際に実行して整理する
 
 ```
 
@@ -572,12 +577,180 @@ jobs:
         - process_log.py ※log
     - 名前は仮。検証データを得たらそれを元に見直す。
 
-- 日次バッチでagent用promptを生成させる
+# 日次バッチでagent用promptを生成させる
+- agentに投げた
+- 手短にレビューしたところ、テンプレート状態で、機能がないように見える
+- どうする？
+    - 実際に実行して整理する
+
+```
+
+### src/active_time_reminder/gui.py
+```py
+"""
+アクティブ時間リマインダー GUI モジュール
+
+このモジュールは、アクティブ時間リマインダー機能のためのシンプルなTkinterベースのGUIを提供します。
+GUIは非ブロッキング設計なので、メインプロセスから呼び出すことができます。
+"""
+
+import tkinter as tk
+from tkinter import ttk
+
+
+class ActiveTimeReminderGUI:
+    """アクティブ時間リマインダーのためのシンプルなGUIウィンドウ。"""
+
+    def __init__(self, title="Active Time Reminder"):
+        """
+        GUIウィンドウを初期化します。
+
+        Args:
+            title (str): ウィンドウタイトル
+        """
+        self.root = tk.Tk()
+        self.root.title(title)
+        self.root.geometry("400x300")
+        self.root.resizable(True, True)
+
+        # UIコンポーネントを初期化
+        self._setup_ui()
+
+        # ウィンドウが実行中かどうかを追跡するフラグ
+        self.is_running = False
+
+    def _setup_ui(self):
+        """ユーザーインターフェースコンポーネントをセットアップします。"""
+        # メインフレーム
+        main_frame = ttk.Frame(self.root, padding="10")
+        main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+
+        # レスポンシブデザインのためのグリッド重みを設定
+        self.root.columnconfigure(0, weight=1)
+        self.root.rowconfigure(0, weight=1)
+        main_frame.columnconfigure(0, weight=1)
+        main_frame.rowconfigure(1, weight=1)
+
+        # タイトルラベル
+        title_label = ttk.Label(
+            main_frame,
+            text="Active Time Reminder",
+            font=("Arial", 16, "bold")
+        )
+        title_label.grid(row=0, column=0, pady=(0, 20))
+
+        # ステータスフレーム
+        status_frame = ttk.LabelFrame(main_frame, text="Status", padding="10")
+        status_frame.grid(row=1, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(0, 10))
+        status_frame.columnconfigure(0, weight=1)
+
+        # ステータスラベル
+        self.status_label = ttk.Label(
+            status_frame,
+            text="Ready",
+            font=("Arial", 12)
+        )
+        self.status_label.grid(row=0, column=0, pady=5)
+
+        # コントロールボタンフレーム
+        button_frame = ttk.Frame(main_frame)
+        button_frame.grid(row=2, column=0, pady=10)
+
+        # 開始/停止ボタン
+        self.control_button = ttk.Button(
+            button_frame,
+            text="Start",
+            command=self._toggle_reminder
+        )
+        self.control_button.pack(side=tk.LEFT, padx=5)
+
+        # 閉じるボタン
+        close_button = ttk.Button(
+            button_frame,
+            text="Close",
+            command=self.close
+        )
+        close_button.pack(side=tk.LEFT, padx=5)
+
+    def _toggle_reminder(self):
+        """リマインダーのオン/オフを切り替えます。"""
+        if self.is_running:
+            self.stop_reminder()
+        else:
+            self.start_reminder()
+
+    def start_reminder(self):
+        """リマインダー機能を開始します。"""
+        self.is_running = True
+        self.status_label.config(text="Running")
+        self.control_button.config(text="Stop")
+        print("Reminder started")  # 実際の機能のプレースホルダー
+
+    def stop_reminder(self):
+        """リマインダー機能を停止します。"""
+        self.is_running = False
+        self.status_label.config(text="Stopped")
+        self.control_button.config(text="Start")
+        print("Reminder stopped")  # 実際の機能のプレースホルダー
+
+    def show(self):
+        """ウィンドウを表示します（非ブロッキング）。"""
+        self.root.deiconify()
+        self.root.lift()
+        self.root.focus_force()
+
+    def hide(self):
+        """ウィンドウを隠します。"""
+        self.root.withdraw()
+
+    def close(self):
+        """ウィンドウを閉じてクリーンアップします。"""
+        if self.is_running:
+            self.stop_reminder()
+        self.root.quit()
+        self.root.destroy()
+
+    def update(self):
+        """
+        GUIを更新します（非ブロッキング）。
+        このメソッドはメインループから定期的に呼び出される必要があります。
+        """
+        try:
+            self.root.update_idletasks()
+            self.root.update()
+        except tk.TclError:
+            # ウィンドウが閉じられた
+            return False
+        return True
+
+    def run_blocking(self):
+        """GUIをブロッキングモードで実行します（スタンドアロン実行用）。"""
+        self.root.mainloop()
+
+
+def main():
+    """スタンドアロン実行用のメイン関数。"""
+    gui = ActiveTimeReminderGUI()
+
+    # ウィンドウクローズイベントを処理
+    def on_closing():
+        gui.close()
+
+    gui.root.protocol("WM_DELETE_WINDOW", on_closing)
+
+    # スタンドアロン実行用のブロッキングモードで実行
+    gui.run_blocking()
+
+
+if __name__ == "__main__":
+    main()
 
 ```
 
 ## 最近の変更（過去7日間）
 ### コミット履歴:
+dde10f0 #5 gui試作品の雛形をagentに生成させた
+73f6ad9 Update project summaries (overview & development status) [auto]
 caeb297 #5 mdメンテ
 3989095 前処理漏れの修正
 571dc90 fix #9 対象userは自分のみとし、それ以外をスコープ外とし、READMEに明記したので、closeとする
@@ -586,20 +759,21 @@ cb4bea7 vscode settings formatter等
 7fc5c9a ignore copilot instructions
 a96d66a close #10 現在なくても運用できているので、保留、後回しとし、closeとする
 136ddff issue-noteは共通ワークフローを呼び出すようにした。目的は、development status生成の誤爆を防止する用。
-55b2c45 #4 mdメンテ
-e9d71c4 #4 mdメンテ
 
 ### 変更されたファイル:
 .gitignore
 .vscode/settings.json
 README.md
 aggregate_process_time.bat
-issue-notes/10.md
+generated-docs/development-status-generated-prompt.md
+generated-docs/development-status.md
+generated-docs/project-overview.md
 issue-notes/4.md
 issue-notes/5.md
 issue-notes/9.md
+src/active_time_reminder/gui.py
 src/log_processor/aggregate_process_time.py
 
 
 ---
-Generated at: 2025-09-21 07:06:51 JST
+Generated at: 2025-09-23 07:08:00 JST
