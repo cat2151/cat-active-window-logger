@@ -1,4 +1,4 @@
-Last updated: 2025-09-23
+Last updated: 2025-09-25
 
 # 開発状況生成プロンプト（開発者向け）
 
@@ -749,6 +749,7 @@ if __name__ == "__main__":
 
 ## 最近の変更（過去7日間）
 ### コミット履歴:
+f435f5d Update project summaries (overview & development status) [auto]
 dde10f0 #5 gui試作品の雛形をagentに生成させた
 73f6ad9 Update project summaries (overview & development status) [auto]
 caeb297 #5 mdメンテ
@@ -758,11 +759,9 @@ e054cb7 fix #4 test greenなのでcloseとする
 cb4bea7 vscode settings formatter等
 7fc5c9a ignore copilot instructions
 a96d66a close #10 現在なくても運用できているので、保留、後回しとし、closeとする
-136ddff issue-noteは共通ワークフローを呼び出すようにした。目的は、development status生成の誤爆を防止する用。
 
 ### 変更されたファイル:
 .gitignore
-.vscode/settings.json
 README.md
 aggregate_process_time.bat
 generated-docs/development-status-generated-prompt.md
@@ -776,4 +775,4 @@ src/log_processor/aggregate_process_time.py
 
 
 ---
-Generated at: 2025-09-23 07:08:00 JST
+Generated at: 2025-09-25 07:07:58 JST
