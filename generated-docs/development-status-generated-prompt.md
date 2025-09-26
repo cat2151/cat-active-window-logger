@@ -1,4 +1,4 @@
-Last updated: 2025-09-26
+Last updated: 2025-09-27
 
 # 開発状況生成プロンプト（開発者向け）
 
@@ -749,6 +749,7 @@ if __name__ == "__main__":
 
 ## 最近の変更（過去7日間）
 ### コミット履歴:
+5a69cc9 Update project summaries (overview & development status) [auto]
 ff9b72c Update project summaries (overview & development status) [auto]
 f435f5d Update project summaries (overview & development status) [auto]
 dde10f0 #5 gui試作品の雛形をagentに生成させた
@@ -758,18 +759,15 @@ caeb297 #5 mdメンテ
 571dc90 fix #9 対象userは自分のみとし、それ以外をスコープ外とし、READMEに明記したので、closeとする
 e054cb7 fix #4 test greenなのでcloseとする
 cb4bea7 vscode settings formatter等
-7fc5c9a ignore copilot instructions
 
 ### 変更されたファイル:
-README.md
 aggregate_process_time.bat
 generated-docs/development-status-generated-prompt.md
 generated-docs/development-status.md
 generated-docs/project-overview.md
 issue-notes/5.md
-issue-notes/9.md
 src/active_time_reminder/gui.py
 
 
 ---
-Generated at: 2025-09-26 07:06:58 JST
+Generated at: 2025-09-27 07:07:44 JST
