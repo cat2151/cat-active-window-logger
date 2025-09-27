@@ -1,138 +1,114 @@
-Last updated: 2025-09-21
+Last updated: 2025-09-27
 
 # Project Overview
 
 ## プロジェクト概要
-- アクティブウィンドウの操作ログを柔軟に記録・分析するための実験的なプロジェクトです。
-- ユーザー固有の要件に合わせて、アクティブウィンドウのタイトルやプロセス情報を記録できます。
-- ログデータの収集だけでなく、変動するタイトルや全てのタイトルを効率的に把握するための機能検討も含まれます。
+- アクティブなウィンドウ情報を記録し、ユーザーの利用状況を分析するためのカスタマイズ可能なロガープロジェクトです。
+- 自分のニーズに合わせた独自のロガー挙動を簡単に構築・検証することを目指しています。
+- 現在は実験段階であり、ウィンドウタイトルの変動監視や過去のタイトル一覧把握など、多様なログ収集と分析機能が検討されています。
 
 ## 技術スタック
-- フロントエンド: 情報が提供されていないため、特定できません。
+- フロントエンド: このプロジェクトでは明示的なフロントエンド技術は使用されていません。
 - 音楽・オーディオ:
-    - Tone.js: Web Audio APIを抽象化し、Webブラウザ上で高品質な音楽やオーディオ処理を可能にするJavaScriptライブラリ。
-    - Web Audio API: Webブラウザに組み込まれた音声処理API。Tone.jsを介して利用され、複雑な音声合成やエフェクト処理を可能にする。
-    - MML (Music Macro Language): 音楽をテキスト形式で記述するための記法。楽譜をプログラム的に表現し、音声合成などに利用される。
+    - **Tone.js**: Web Audio APIを抽象化し、Webブラウザ上で高品質な音楽やオーディオ処理を容易にするJavaScriptライブラリです。
+    - **Web Audio API**: ブラウザに内蔵されている音声処理機能で、Tone.jsを通じて利用されます。
+    - **MML (Music Macro Language)**: 音楽をテキストで記述するための簡易的な記法を解析するパーサーがプロジェクトで利用されています。
 - 開発ツール:
-    - Node.js runtime: Google ChromeのV8 JavaScriptエンジン上で動作するJavaScript実行環境。サーバーサイドや開発ツールとして使用される。
-- テスト: 情報が提供されていないため、特定できません。
-- ビルドツール: 情報が提供されていないため、特定できません。
-- 言語機能: 情報が提供されていないため、特定できません。（ただし、ファイル構造からPythonが主言語と推測されます）
+    - **Node.js runtime**: JavaScriptコードを実行するためのオープンソースのサーバーサイド実行環境です。
+- テスト: このプロジェクトでは明示的なテストフレームワークは指定されていませんが、テストファイルが存在します。
+- ビルドツール: このプロジェクトでは明示的なビルドツールは使用されていません。
+- 言語機能: このプロジェクトの主要言語はPythonですが、特定の言語機能は明示されていません。
 - 自動化・CI/CD:
-    - GitHub Actions: コードの変更を検知し、自動的にビルド、テスト、デプロイなどのワークフローを実行するGitHubのCI/CDサービス。本プロジェクトでは「プロジェクト要約自動生成」と「Issue自動管理」の2つのワークフローが設定されています。
+    - **GitHub Actions**: ソースコードの変更をトリガーに、自動的にテストの実行やデプロイ、ドキュメント生成などのワークフローを実行するCI/CDツールです。本プロジェクトでは「プロジェクト要約自動生成」と「Issue自動管理」の2つのワークフローが設定されています。
 - 開発標準:
-    - EditorConfig: 異なるIDEやエディタを使用する開発者の間で、インデントスタイル、文字コード、改行コードなどのコードフォーマットを統一するための設定ファイル形式。
+    - **EditorConfig**: 異なるIDEやエディタを使用する開発者間でも、インデントスタイルや文字コードなどのコーディングスタイルを統一するための設定ファイルです。
 
 ## ファイル階層ツリー
 ```
-📄 .editorconfig
-📄 .gitignore
-📄 .pylintrc
-📁 .vscode/
-  📊 settings.json
-📄 LICENSE
-📖 README.md
-📄 aggregate_process_time.bat
-📄 cat_active_window_logger.bat
-📄 dump_log.bat
-📁 generated-docs/
-📁 issue-notes/
-  📖 1.md
-  📖 10.md
-  📖 2.md
-  📖 3.md
-  📖 4.md
-  📖 5.md
-  📖 6.md
-  📖 7.md
-  📖 8.md
-  📖 9.md
-📄 log_enhance_active_time.bat
-📁 src/
-  📁 log_enhance_active_time/
-    📄 __init__.py
-    📄 __main__.py
-    📄 add_active_time.py
-  📁 log_processor/
-    📄 aggregate_process_time.py
-    📄 dump_log.py
-  📁 logger/
-    📄 action_by_ipc.py
-    📄 cat_active_window_logger.py
-    📄 dated_log.py
-    📄 get_window_info.py
-    📄 ipc.py
-    📄 log_and_display.py
-    📄 utils.py
-📁 tests/
-  📄 __init__.py
-  📄 test_add_active_time.py
+.editorconfig
+.gitignore
+.pylintrc
+.vscode/
+  settings.json
+LICENSE
+README.md
+aggregate_process_time.bat
+cat_active_window_logger.bat
+dump_log.bat
+generated-docs/
+issue-notes/
+  1.md
+  10.md
+  2.md
+  3.md
+  4.md
+  5.md
+  6.md
+  7.md
+  8.md
+  9.md
+log_enhance_active_time.bat
+src/
+  active_time_reminder/
+    gui.py
+  log_enhance_active_time/
+    __init__.py
+    __main__.py
+    add_active_time.py
+  log_processor/
+    aggregate_process_time.py
+    dump_log.py
+  logger/
+    action_by_ipc.py
+    cat_active_window_logger.py
+    dated_log.py
+    get_window_info.py
+    ipc.py
+    log_and_display.py
+    utils.py
+tests/
+  __init__.py
+  test_add_active_time.py
 ```
 
 ## ファイル詳細説明
-- `.editorconfig`: プロジェクト全体でコードの書式設定（インデント、改行コードなど）を統一するための設定ファイルです。
-- `.gitignore`: Gitのバージョン管理から除外するファイルやディレクトリ（例: 生成されたログファイル、一時ファイル、仮想環境など）を指定するファイルです。
-- `.pylintrc`: Pythonコードの静的解析ツールPylintの設定ファイルで、コードの品質やコーディング規約に違反がないかをチェックするためのルールを定義します。
-- `.vscode/settings.json`: Visual Studio Codeエディタのワークスペース固有の設定ファイルで、言語設定、拡張機能の設定、フォーマッタの指定などが含まれます。
-- `LICENSE`: プロジェクトのライセンス情報が記載されたファイルで、本プロジェクトの利用条件や再配布に関する規約を示します。
-- `README.md`: プロジェクトの概要、目的、使い方、インストール手順、貢献方法など、プロジェクトに関する包括的な情報が記述された主要なドキュメントです。
-- `aggregate_process_time.bat`: `src/log_processor/aggregate_process_time.py`スクリプトを実行するためのWindowsバッチファイルです。おそらくログからプロセスごとの合計アクティブ時間を集計する処理を自動化します。
-- `cat_active_window_logger.bat`: `src/logger/cat_active_window_logger.py`スクリプトを実行するためのWindowsバッチファイルです。アクティブウィンドウの情報を定期的に取得し、ログに記録するロガー機能を起動します。
-- `dump_log.bat`: `src/log_processor/dump_log.py`スクリプトを実行するためのWindowsバッチファイルです。ログデータを特定の形式で出力または表示する処理を自動化します。
-- `generated-docs/`: GitHub Actionsによって自動生成されたドキュメント（例: プロジェクト要約など）を格納するディレクトリです。
-- `issue-notes/`: 開発中の課題やイシューに関する詳細なノートや情報を格納するディレクトリです。個別のMarkdownファイルがそれぞれのイシューに対応しています。
-- `log_enhance_active_time.bat`: `src/log_enhance_active_time/__main__.py`スクリプトを実行するためのWindowsバッチファイルです。ログデータにアクティブ時間に関する追加情報を付加する処理を自動化します。
-- `src/`: プロジェクトの主要なPythonソースコードを格納するルートディレクトリです。
-    - `src/log_enhance_active_time/`: ログデータにアクティブ時間情報を付加する機能に関連するモジュール群。
-        - `src/log_enhance_active_time/__init__.py`: Pythonパッケージの初期化ファイル。
-        - `src/log_enhance_active_time/__main__.py`: `log_enhance_active_time`パッケージが直接実行されたときのエントリポイントとなるファイルです。
-        - `src/log_enhance_active_time/add_active_time.py`: 既存のログデータにアクティブ時間の計算結果や関連情報を追加するためのロジックを実装したファイルです。
-    - `src/log_processor/`: 記録されたログデータを処理・分析するためのモジュール群。
-        - `src/log_processor/aggregate_process_time.py`: ログデータから各プロセスがアクティブだった合計時間を集計し、レポートを生成するロジックを実装したファイルです。
-        - `src/log_processor/dump_log.py`: ログデータを読み込み、特定のフォーマット（例: TOML, CSV）で出力するためのロジックを実装したファイルです。
-    - `src/logger/`: アクティブウィンドウの情報を取得し、記録するための主要なロガーモジュール群。
-        - `src/logger/action_by_ipc.py`: プロセス間通信（IPC）を通じて、ロガーに対する特定のアクション（例: ログ開始/停止、設定変更）を制御するロジックを実装したファイルです。
-        - `src/logger/cat_active_window_logger.py`: アクティブウィンドウのタイトル、プロセス名、プロセスIDなどの情報を継続的に取得し、ログファイルに記録する主要なロガー機能を提供します。
-        - `src/logger/dated_log.py`: ログファイルを日付ごとに分割・管理するための機能（例: 日次ログファイルの作成、古いログのアーカイブ）を実装したファイルです。
-        - `src/logger/get_window_info.py`: OSのAPIを使用して、現在アクティブなウィンドウのタイトル、プロセス名、プロセスIDなどの情報を取得するための関数群を提供します。
-        - `src/logger/ipc.py`: 複数のプロセス間での安全なデータ交換やコマンド実行を可能にするプロセス間通信（IPC）の共通ユーティリティや基盤ロジックを実装したファイルです。
-        - `src/logger/log_and_display.py`: 取得したログデータを記録するだけでなく、リアルタイムでコンソールやUIに表示する機能に関連するロジックを実装したファイルです。
-        - `src/logger/utils.py`: ロガーモジュール内で広く利用される汎用的なユーティリティ関数やヘルパー関数（例: 時間計算、文字列処理）をまとめたファイルです。
-- `tests/`: プロジェクトのユニットテストや統合テストのコードを格納するディレクトリです。
-    - `tests/__init__.py`: Pythonパッケージの初期化ファイル。
-    - `tests/test_add_active_time.py`: `src/log_enhance_active_time/add_active_time.py`モジュールの機能が正しく動作するかを検証するためのテストコードです。
+-   `.editorconfig`: コードの整形ルール（インデントスタイル、文字コードなど）を定義し、異なるエディタ間での統一を保証します。
+-   `.gitignore`: Gitのバージョン管理から除外するファイルやディレクトリを指定します。
+-   `.pylintrc`: Pythonの静的コード解析ツールであるPylintの設定を定義します。
+-   `.vscode/settings.json`: VS Codeエディタのワークスペース固有の設定を記述します。
+-   `LICENSE`: プロジェクトのライセンス情報が記載されており、利用条件を示します。
+-   `README.md`: プロジェクトの概要、目的、使い方、インストール手順などが記述されたドキュメントです。
+-   `aggregate_process_time.bat`: プロセスごとのアクティブ時間を集計するPythonスクリプトを呼び出すバッチファイルです。
+-   `cat_active_window_logger.bat`: アクティブウィンドウ情報を継続的に記録する主要なロガースクリプトを起動するためのバッチファイルです。
+-   `dump_log.bat`: 記録されたログデータを整形して出力するPythonスクリプトを呼び出すバッチファイルです。
+-   `generated-docs/`: GitHub Actionsなどによって自動生成されたドキュメントが格納されるディレクトリです。
+-   `issue-notes/`: 開発中の課題や検討事項に関するメモがIssue番号ごとにファイルとして格納されています。
+-   `log_enhance_active_time.bat`: ログにアクティブ時間に関連する追加情報を付与するPythonスクリプトを起動するためのバッチファイルです。
+-   `src/`: プロジェクトのPythonソースコードが格納されているルートディレクトリです。
+    -   `src/active_time_reminder/gui.py`: アクティブ時間の通知やリマインダー表示のためのグラフィカルユーザーインターフェース (GUI) を実装しています。
+    -   `src/log_enhance_active_time/__init__.py`: `log_enhance_active_time`パッケージの初期化ファイルです。
+    -   `src/log_enhance_active_time/__main__.py`: `python -m log_enhance_active_time`としてパッケージを直接実行した際のエントリポイントです。
+    -   `src/log_enhance_active_time/add_active_time.py`: 既存のログデータにアクティブ時間情報を追加・更新するロジックを実装しています。
+    -   `src/log_processor/aggregate_process_time.py`: ログデータから各プロセスのアクティブな利用時間を集計・分析するスクリプトです。
+    -   `src/log_processor/dump_log.py`: 記録されたログデータを読み込み、指定された形式で出力（ダンプ）するスクリプトです。
+    -   `src/logger/action_by_ipc.py`: プロセス間通信 (IPC) を介して受け取ったコマンドやアクションを処理する機能を実装しています。
+    -   `src/logger/cat_active_window_logger.py`: アクティブなウィンドウのタイトルやプロセス情報などを定期的に取得し、ログに記録する主要なロジックを実装しています。
+    -   `src/logger/dated_log.py`: 日付に基づいたログファイルの生成、管理、ローテーションなどの機能を提供します。
+    -   `src/logger/get_window_info.py`: OSのAPIを利用して、現在アクティブなウィンドウのタイトル、プロセス名、プロセスIDなどの情報を取得する機能を提供します。
+    -   `src/logger/ipc.py`: プロセス間通信（Inter-Process Communication）のための共通モジュールで、異なるプロセス間でのデータ交換やコマンド送受信を可能にします。
+    -   `src/logger/log_and_display.py`: ログの記録と、必要に応じてその情報をユーザーインターフェースやコンソールに表示する機能を担当します。
+    -   `src/logger/utils.py`: ロガーモジュール内で共通して利用されるユーティリティ関数やヘルパー関数を集めたファイルです。
+-   `tests/__init__.py`: テストディレクトリをPythonパッケージとして認識させるための初期化ファイルです。
+-   `tests/test_add_active_time.py`: `src/log_enhance_active_time/add_active_time.py`に実装された機能が正しく動作するかを検証するためのテストコードです。
 
 ## 関数詳細説明
-プロジェクト情報には関数の具体的な詳細（役割、引数、戻り値など）が提供されていないため、詳細な説明はできません。各ファイルに含まれるであろう主要な関数について、ファイル名からの推測に基づく一般的な役割を以下に示します。
-
-- **`src/log_enhance_active_time/add_active_time.py`**:
-    - `add_active_time(log_data)`: ログデータにアクティブ時間情報を追加する関数。
-- **`src/log_processor/aggregate_process_time.py`**:
-    - `aggregate_process_time(log_data)`: ログデータからプロセスごとのアクティブ時間を集計する関数。
-- **`src/log_processor/dump_log.py`**:
-    - `dump_log(log_data, format)`: ログデータを指定されたフォーマットで出力する関数。
-- **`src/logger/action_by_ipc.py`**:
-    - `perform_action(action_type, *args)`: IPC経由で特定のアクションを実行する関数。
-- **`src/logger/cat_active_window_logger.py`**:
-    - `start_logging()`: アクティブウィンドウの情報を記録するロガーを開始する関数。
-    - `stop_logging()`: ロガーを停止する関数。
-- **`src/logger/dated_log.py`**:
-    - `get_current_log_file()`: 現在の日付に対応するログファイルパスを取得する関数。
-    - `write_to_log(data)`: データを日付付きログファイルに書き込む関数。
-- **`src/logger/get_window_info.py`**:
-    - `get_active_window_title()`: アクティブウィンドウのタイトルを取得する関数。
-    - `get_active_process_info()`: アクティブプロセスの情報（名前、IDなど）を取得する関数。
-- **`src/logger/ipc.py`**:
-    - `send_message(message)`: IPCを通じてメッセージを送信する関数。
-    - `receive_message()`: IPCを通じてメッセージを受信する関数。
-- **`src/logger/log_and_display.py`**:
-    - `log_and_display_info(info)`: 情報をログに記録し、同時に表示する関数。
-- **`src/logger/utils.py`**:
-    - `format_timestamp(timestamp)`: タイムスタンプを整形するユーティリティ関数。
+このプロジェクトにおける関数の詳細情報は、提供された情報からは分析できませんでした。
+一般的に、関数は特定のタスクを実行するためのコードブロックであり、引数を受け取り、処理を行い、結果を戻り値として返します。
+例として、`get_window_info.py`にはアクティブウィンドウの情報を取得する関数が、`add_active_time.py`にはログにアクティブ時間を追加する関数が存在すると推測されます。
 
 ## 関数呼び出し階層ツリー
 ```
-関数呼び出し階層を分析できませんでした。
+関数呼び出し階層を分析できませんでした
 
 ---
-Generated at: 2025-09-21 07:07:13 JST
+Generated at: 2025-09-27 07:08:06 JST
