@@ -1,4 +1,4 @@
-Last updated: 2025-09-27
+Last updated: 2025-10-30
 
 # 開発状況生成プロンプト（開発者向け）
 
@@ -189,13 +189,15 @@ Last updated: 2025-09-27
 - .github/actions-tmp/package-lock.json
 - .github/actions-tmp/package.json
 - .github/actions-tmp/src/main.js
+- .github/workflows/call-callgraph.yml
 - .github/workflows/call-daily-project-summary.yml
 - .github/workflows/call-issue-note.yml
+- .github/workflows/call-translate-readme.yml
 - .gitignore
 - .pylintrc
 - .vscode/settings.json
 - LICENSE
-- README.md
+- README.ja.md
 - aggregate_process_time.bat
 - cat_active_window_logger.bat
 - dump_log.bat
@@ -749,18 +751,12 @@ if __name__ == "__main__":
 
 ## 最近の変更（過去7日間）
 ### コミット履歴:
-5a69cc9 Update project summaries (overview & development status) [auto]
-ff9b72c Update project summaries (overview & development status) [auto]
-f435f5d Update project summaries (overview & development status) [auto]
-dde10f0 #5 gui試作品の雛形をagentに生成させた
-73f6ad9 Update project summaries (overview & development status) [auto]
-caeb297 #5 mdメンテ
-3989095 前処理漏れの修正
-571dc90 fix #9 対象userは自分のみとし、それ以外をスコープ外とし、READMEに明記したので、closeとする
-e054cb7 fix #4 test greenなのでcloseとする
-cb4bea7 vscode settings formatter等
+0287fb5 サブタイトルと末尾の文言を追加
 
 ### 変更されたファイル:
+.github/workflows/call-callgraph.yml
+.github/workflows/call-translate-readme.yml
+README.ja.md
 aggregate_process_time.bat
 generated-docs/development-status-generated-prompt.md
 generated-docs/development-status.md
@@ -770,4 +766,4 @@ src/active_time_reminder/gui.py
 
 
 ---
-Generated at: 2025-09-27 07:07:44 JST
+Generated at: 2025-10-30 07:08:16 JST
