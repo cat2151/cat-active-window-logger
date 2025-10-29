@@ -1,4 +1,4 @@
-# cat-active-window-logger
+# cat-active-window-logger - Cat is watching you -
 オープンソース、自分の用途にマッチした挙動のロガー、を楽に作れるかの検証用
 
 # 状況
@@ -100,3 +100,9 @@
     - 自分以外のuserはスコープ外とする
         - このprojectはそうしないとしがらみで止まってしまう、と判断した
     - [issue #9](./issue-notes/9.md)
+- サブタイトルと文末
+    - `- Cat is watching you -`と`*Big Brother is watching you. But this time, it's a cat. 🐱*`
+    - これは`cat-window-watcher`のものと重複している。
+    - アプリの位置付けがかなり近いため、ひとまず重複したまま様子見する
+
+*Big Brother is watching you. But this time, it's a cat. 🐱*
